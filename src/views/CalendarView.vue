@@ -94,7 +94,9 @@
 <script>
 export default {
   data: () => ({
-    selectedEvent: {},
+     selectedEvent: {},
+      selectedElement: null,
+      selectedOpen: false,
     hour: 60 * 60 * 1000,
     focus: '',
     type: '4day',
@@ -183,6 +185,8 @@ export default {
     next() {
       this.$refs.calendar.next()
     },
+
+
     getEvents({ start, end }) {
       // const events = []
 
@@ -209,7 +213,12 @@ export default {
 
       // this.events = events
     },
-  
+    rnd(a, b) {
+      return Math.floor((b - a + 1) * Math.random()) + a
+    },
+    rndElement(arr) {
+      return arr[this.rnd(0, arr.length - 1)]
+    },
   },
 }
 </script>
