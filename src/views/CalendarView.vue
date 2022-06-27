@@ -92,6 +92,8 @@
 </template>
 
 <script>
+
+import { toTimestamp  } from "@/utils";
 export default {
   data: () => ({
      selectedEvent: {},
@@ -117,16 +119,13 @@ export default {
   }),
   methods: {
 
-    toTimestamp(year, month, day, hour, minute = 0, second = 0) {
-      var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-      return datum.getTime();
-    },
+    // toTimestamp(year, month, day, hour, minute = 0, second = 0) {
+    //   var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    //   return datum.getTime();
+    // },
 
     onClickTime(e) {
-
-      console.log('OnClickTime', this.events);
-
-      var startDate = this.toTimestamp(
+      var startDate = toTimestamp(
         e.year,
         e.month,
         e.day,
