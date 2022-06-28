@@ -49,7 +49,7 @@
       </v-sheet>
       <v-sheet>
         <v-calendar interval-width="60" first-interval=8 interval-count=14 ref="calendar" v-model="value"
-          color="primary" :type="type" :events="events" :event-color="getEventColor" :event-ripple="false"
+          color="primary" :type="type" :events=" $store.state.events" :event-color="getEventColor" :event-ripple="false"
           @click:event="onEventClicked" @click:time="onClickTime" @change="getEvents" >
          
         </v-calendar>
@@ -58,13 +58,21 @@
 
         <!-- menu event -->
 
-        <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
+        <ShFormEventDialog
+          :dialog="formEventDialog"
+          @closeEventDialog="onCloseEventDialog"
+          :preEvent = "createEvent"
+        >
+
+        </ShFormEventDialog>
+
+        <!-- <v-menu v-model="selectedOpen" :close-on-content-click="false" :activator="selectedElement" offset-x>
           <v-card color="grey lighten-4" min-width="350px" flat>
-            <v-toolbar :color="selectedEvent.color" dark>
+            <v-toolbar :color="colors[0]" dark>
               <v-btn icon>
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
+              <v-toolbar-title v-html=""></v-toolbar-title>
               <v-spacer></v-spacer>
               <v-btn icon>
                 <v-icon>mdi-heart</v-icon>
@@ -74,7 +82,7 @@
               </v-btn>
             </v-toolbar>
             <v-card-text>
-              <span v-html="selectedEvent.details"></span>
+              <span v-html=""></span>
             </v-card-text>
             <v-card-actions>
               <v-btn text color="secondary" @click="selectedOpen = false">
@@ -82,7 +90,7 @@
               </v-btn>
             </v-card-actions>
           </v-card>
-        </v-menu>
+        </v-menu> -->
 
 
         <!-- end menu event -->
@@ -94,131 +102,122 @@
 <script>
 
 import { toTimestamp  } from "@/utils";
+import ShFormEventDialog from "@/components/ShFormEventDialog.vue";
 export default {
-  data: () => ({
-     selectedEvent: {},
-      selectedElement: null,
-      selectedOpen: false,
-    hour: 60 * 60 * 1000,
-    focus: '',
-    type: '4day',
-    typeToLabel: {
-      month: 'Month',
-      week: 'Week',
-      day: 'Day',
-      '4day': '4 Days',
+    data: () => ({
+        formEventDialog:false,
+        selectedEvent: {},
+        selectedElement: null,
+        selectedOpen: false,
+      //  hour: 60 * 60 * 1000,
+        focus: "",
+        type: "4day",
+        typeToLabel: {
+            month: "Month",
+            week: "Week",
+            day: "Day",
+            "4day": "4 Days",
+        },
+        value: "",
+      
+        colors: ["#2196F3", "#3F51B5", "#673AB7", "#00BCD4", "#4CAF50", "#FF9800", "#757575"],
+        names: ["Meeting", "Holiday", "PTO", "Travel", "Event", "Birthday", "Conference", "Party"],
+        createEvent: null,
+        createStart: null,
+    }),
+    methods: {
+        onCloseEventDialog(){
+            this.formEventDialog = false
+        },
+        onClickTime(e) {
+            this.formEventDialog = true
+           
+            var startDate = toTimestamp(
+              e.year,
+              e.month,
+              e.day,
+              e.hour - 2
+            );
+            var checkingExisitEventsOnTheSameHour = this.$store.state.events.filter(item => {
+              return item.start === startDate
+            })
+            if (checkingExisitEventsOnTheSameHour.length === 0) {
+              this.createEvent = {
+                name: ``,
+                color: this.rndElement(this.colors),
+                start: startDate,
+                end: 0,
+                timed: true,
+              }
+              
+             // this.$store.state.events.push(this.createEvent)
+              e.preventDefault
+            }
+        },
+        onEventClicked({ nativeEvent, event }) {
+          // we got the event created
+          console.log(event);
+            const open = () => {
+                this.selectedEvent = event;
+                this.selectedElement = nativeEvent.target;
+                this.selectedOpen = true
+            };
+            if (this.selectedOpen) {
+                this.selectedOpen = false;
+                 open()
+            }
+            else {
+                open();
+            }
+            nativeEvent.stopPropagation();
+        },
+        viewDay({ date }) {
+            this.focus = date;
+            this.type = "day";
+        },
+        getEventColor(event) {
+            return event.color;
+        },
+        setToday() {
+            this.focus = Date.now();
+            this.type = "day";
+        },
+        prev() {
+            this.$refs.calendar.prev();
+        },
+        next() {
+            this.$refs.calendar.next();
+        },
+        getEvents({ start, end }) {
+            // const events = []
+            // const min = new Date(`${start.date}T00:00:00`).getTime()
+            // const max = new Date(`${end.date}T23:59:59`).getTime()
+            // const days = (max - min) / 86400000
+            // const eventCount = this.rnd(days, days + 20)
+            // for (let i = 0; i < eventCount; i++) {
+            //   const timed = this.rnd(0, 3) !== 0
+            //   const firstTimestamp = this.rnd(min, max)
+            //   const secondTimestamp = this.rnd(2, timed ? 8 : 288) * 900000
+            //   const start = firstTimestamp - (firstTimestamp % 900000)
+            //   const end = start + secondTimestamp
+            //   events.push({
+            //     name: this.rndElement(this.names),
+            //     color: this.rndElement(this.colors),
+            //     start,
+            //     end,
+            //     timed,
+            //   })
+            // }
+            // this.events = events
+        },
+        rnd(a, b) {
+            return Math.floor((b - a + 1) * Math.random()) + a;
+        },
+        rndElement(arr) {
+            return arr[this.rnd(0, arr.length - 1)];
+        },
     },
-    value: '',
-    events: [],
-    colors: ['#2196F3', '#3F51B5', '#673AB7', '#00BCD4', '#4CAF50', '#FF9800', '#757575'],
-    names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
-  
-    createEvent: null,
-    createStart: null,
-   
-  }),
-  methods: {
-
-    // toTimestamp(year, month, day, hour, minute = 0, second = 0) {
-    //   var datum = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-    //   return datum.getTime();
-    // },
-
-    onClickTime(e) {
-      var startDate = toTimestamp(
-        e.year,
-        e.month,
-        e.day,
-        e.hour - 2
-      );
-
-
-      var checkingExisitEventsOnTheSameHour = this.events.filter(item => {
-        return item.start === startDate
-      })
-
-      if (checkingExisitEventsOnTheSameHour.length === 0) {
-
-        this.createEvent = {
-          name: `Event #${this.events.length}`,
-          color: this.rndElement(this.colors),
-          start: startDate,
-          end: startDate + this.hour,
-          timed: true,
-        }
-        this.events.push(this.createEvent)
-        e.preventDefault
-
-      }
-
-    },
-    onEventClicked({ nativeEvent, event }) {
-      const open = () => {
-        this.selectedEvent = event
-        this.selectedElement = nativeEvent.target
-        requestAnimationFrame(() => requestAnimationFrame(() => this.selectedOpen = true))
-      }
-      if (this.selectedOpen) {
-        this.selectedOpen = false
-        requestAnimationFrame(() => requestAnimationFrame(() => open()))
-      } else {
-        open()
-      }
-      nativeEvent.stopPropagation()
-    },
- 
-    viewDay({ date }) {
-      this.focus = date
-      this.type = 'day'
-    },
-    getEventColor(event) {
-      return event.color
-    },
-    setToday() {
-      this.focus = Date.now()
-      this.type = 'day'
-    },
-    prev() {
-      this.$refs.calendar.prev()
-    },
-    next() {
-      this.$refs.calendar.next()
-    },
-
-
-    getEvents({ start, end }) {
-      // const events = []
-
-      // const min = new Date(`${start.date}T00:00:00`).getTime()
-      // const max = new Date(`${end.date}T23:59:59`).getTime()
-      // const days = (max - min) / 86400000
-      // const eventCount = this.rnd(days, days + 20)
-
-      // for (let i = 0; i < eventCount; i++) {
-      //   const timed = this.rnd(0, 3) !== 0
-      //   const firstTimestamp = this.rnd(min, max)
-      //   const secondTimestamp = this.rnd(2, timed ? 8 : 288) * 900000
-      //   const start = firstTimestamp - (firstTimestamp % 900000)
-      //   const end = start + secondTimestamp
-
-      //   events.push({
-      //     name: this.rndElement(this.names),
-      //     color: this.rndElement(this.colors),
-      //     start,
-      //     end,
-      //     timed,
-      //   })
-      // }
-
-      // this.events = events
-    },
-    rnd(a, b) {
-      return Math.floor((b - a + 1) * Math.random()) + a
-    },
-    rndElement(arr) {
-      return arr[this.rnd(0, arr.length - 1)]
-    },
-  },
+    components: { ShFormEventDialog }
 }
 </script>
 
