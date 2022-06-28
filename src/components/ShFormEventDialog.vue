@@ -63,6 +63,14 @@
          
         </v-card-text>
         <v-card-actions>
+             <v-btn
+            v-if="$store.state.selectedEvent.name"
+            color="red darken-1"
+            text
+            @click="deleteEvent"
+          >
+            Delete
+          </v-btn>
           <v-spacer></v-spacer>
           <v-btn
             color="blue darken-1"
@@ -101,6 +109,15 @@
    ]
     }),
     methods: {
+        deleteEvent() {
+            //
+            var {start,end } = this.$store.state.selectedEvent
+            this.$store.state.events = this.$store.state.events.filter(ev => {
+                return ev.start !== start && ev.end !== end
+            })
+             this.$emit('closeEventDialog')
+             this.$store.state.selectedEvent = {}
+        },
         createEvent () {
             var indexDuration = this.durations.indexOf(this.eventDuration)
             this.preEvent.end = this.preEvent.start  + this.durationsMapping[indexDuration] * 60 * 1000 , // add the duration to the startdate
@@ -112,7 +129,7 @@
             this.eventDetails =''
             this.eventDuration =''
             this.eventName =''
-            //this.eventType =''
+            this.eventType =''
          
         },
     }
