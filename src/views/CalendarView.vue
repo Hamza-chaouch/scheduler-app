@@ -128,6 +128,7 @@ export default {
     methods: {
         onCloseEventDialog(){
             this.formEventDialog = false
+            this.createEvent = {}
         },
         onClickTime(e) {
             this.formEventDialog = true

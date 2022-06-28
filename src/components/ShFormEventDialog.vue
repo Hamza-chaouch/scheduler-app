@@ -107,7 +107,12 @@
             this.preEvent.name = this.eventName
           
             this.$store.state.events.push(this.preEvent)
+            
             this.$emit('closeEventDialog')
+            this.eventDetails =''
+            this.eventDuration =''
+            this.eventName =''
+            //this.eventType =''
          
         },
     }
