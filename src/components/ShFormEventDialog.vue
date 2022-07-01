@@ -64,7 +64,7 @@
         </v-card-text>
         <v-card-actions>
              <v-btn
-            v-if="$store.state.selectedEvent.name"
+            v-if="$store.getters.getSelectedEvent.name"
             color="red darken-1"
             text
             @click="deleteEvent"
@@ -79,7 +79,16 @@
           >
             Close
           </v-btn>
-          <v-btn
+          <v-btn 
+            v-if="$store.getters.getSelectedEvent.name"
+            color="blue darken-1"
+            text
+            @click="updateEvent"
+          >
+            Update
+          </v-btn>
+          <v-btn 
+            v-else
             color="blue darken-1"
             text
             @click="createEvent"
@@ -92,10 +101,13 @@
   </v-row>
 </template>
 <script>
+
+
   export default {
     props : ['dialog','preEvent'],
     data: () => ({
    //   dialog: false,
+   
    eventName:'',
    eventDetails:'',
    eventDuration : '',
@@ -107,24 +119,46 @@
     90,
     120
    ]
-    }),
+    })
+   ,
+  //  computed : {
+  //     newevent : {
+  //       get () {
+  //         return this.$store.
+  //       },
+  //       set (value) {
+
+  //       }
+  //     }
+  //  },
     methods: {
-        deleteEvent() {
-            //
-            var {start,end } = this.$store.state.selectedEvent
-            this.$store.state.events = this.$store.state.events.filter(ev => {
-                return ev.start !== start && ev.end !== end
-            })
-             this.$emit('closeEventDialog')
-             this.$store.state.selectedEvent = {}
+      // async setUpdateFormValues(){
+      //   await this.$nextTick(() => {
+        
+      //    const {name , eventDetails,eventDuration,eventType} = this.$store.getters.getSelectedEvent
+      //    this.eventDetails =eventDetails
+      //    this.eventDuration =eventDuration
+      //    this.eventName =name
+      //    this.eventType =eventType
+      // });
+      
+      // },
+        deleteEvent() {           
+             this.$store.dispatch('deleteEvent') // we use the selectedEvent in the store
+             this.$emit('closeEventDialog')         
+             this.$store.dispatch('selectEvent', {})
         },
         createEvent () {
             var indexDuration = this.durations.indexOf(this.eventDuration)
             this.preEvent.end = this.preEvent.start  + this.durationsMapping[indexDuration] * 60 * 1000 , // add the duration to the startdate
             this.preEvent.name = this.eventName
-          
-            this.$store.state.events.push(this.preEvent)
+            this.preEvent.eventDetails = this.eventDetails
+            this.preEvent.eventDuration= this.eventDuration
+            this.preEvent.eventType= this.eventType
+         
             
+            this.$store.dispatch('addEvent', this.preEvent)
+
             this.$emit('closeEventDialog')
             this.eventDetails =''
             this.eventDuration =''
@@ -132,6 +166,9 @@
             this.eventType =''
          
         },
+        updateEvent() {
+          console.log('update event');
+        }
     }
   }
 </script>

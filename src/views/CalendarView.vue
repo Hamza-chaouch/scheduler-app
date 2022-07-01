@@ -115,6 +115,7 @@ export default {
               e.day,
               e.hour - 2
             );
+
             var checkingExisitEventsOnTheSameHour = this.$store.state.events.filter(item => {
               return item.start === startDate
             })
@@ -127,16 +128,16 @@ export default {
                 timed: true,
               }
               
-             // this.$store.state.events.push(this.createEvent)
-              e.preventDefault
+             
             }
         },
         onEventClicked({ nativeEvent, event }) {
           // we got the event created
           this.formEventDialog = true
           console.log(event ,'onEventClicked');
-          this.$store.state.selectedEvent = event 
-          nativeEvent.stopPropagation();
+
+          this.$store.dispatch('selectEvent',event)
+        
         },
         viewDay({ date }) {
             this.focus = date;
